@@ -5,6 +5,7 @@ db = SQLAlchemy()
 
 
 class Users(db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
@@ -20,6 +21,10 @@ class Users(db.Model):
     interests = db.Column(db.String(500), unique=False, nullable=False)
     smoker = db.Column(db.Boolean(), unique=False, nullable=False)
     social_media = db.Column(db.String(), unique=True, nullable=True)
+
+    # RELACIONES
+    apartment_as_leader = db.relationship('Apartments', backref='leader', lazy=True)
+
 
     def __repr__(self):
         return f'<User {self.email}>'
@@ -43,12 +48,16 @@ class Users(db.Model):
                 }
 
 class Suitors(db.Model):
+    __tablename__ = 'suitor'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer(), unique=True, nullable=False)
-    post_id = db.Column(db.Integer(), unique=True, nullable=False)
     suitor_status = db.Column(db.String(15), unique=False, nullable=True)
     leader_status = db.Column(db.String(15), unique=False, nullable=True)
     leader_observations = db.Column(db.String(500), unique=True, nullable=True)
+
+    # RELACIONES
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'),unique=False, nullable=False)
+    post_id = db.Column(db.Integer(),db.ForeignKey('post.id'), unique=False, nullable=False)
+
 
     def serialize(self):
         return {'id' : self.id,
@@ -63,13 +72,17 @@ class Suitors(db.Model):
 
 
 class Posts(db.Model):
+    __tablename__ = 'post'
     id = db.Column(db.Integer(), primary_key=True) 
-    pisos_id = db.Column(db.Integer(), unique=True, nullable=False)
     price = db.Column(db.Integer(), unique=False, nullable=False)
     description = db.Column(db.String(800), unique=False, nullable=False)
     publication_date = db.Column(db.Date(), unique=False, nullable=False)
     available_spots = db.Column(db.Integer(), unique=False, nullable=False)
     status = db.Column(db.Boolean(),unique=False, nullable=False)
+
+    # RELACIONES
+    pisos_id = db.Column(db.Integer(),db.ForeignKey('apartment.id'), unique=False, nullable=False)
+
 
     def serialize(self):
         return {'id' : self.id,
@@ -83,9 +96,9 @@ class Posts(db.Model):
 
 
 class Apartments(db.Model):
+    __tablename__ = 'apartment'
     id = db.Column(db.Integer(), primary_key=True) 
     address = db.Column(db.String(),unique=True, nullable=False) 
-    flat_leader = db.Column(db.String(),unique=True, nullable=True) 
     rooms = db.Column(db.Integer(),unique=False, nullable=False) 
     bathrooms = db.Column(db.Integer(),unique=False, nullable=False) 
     roommates = db.Column(db.Integer(),unique=False, nullable=True) 
@@ -101,6 +114,9 @@ class Apartments(db.Model):
     deposit = db.Column(db.Integer(),unique=False ,nullable=True) 
     availability = db.Column(db.Integer(),unique=False, nullable=False) 
     accessibility = db.Column(db.String(),unique=False, nullable=True)
+
+    #RELACIONES
+    flat_leader = db.Column(db.String(), db.ForeignKey('user.id'), unique=True, nullable=True) 
 
 
     def serialize(self):
@@ -123,11 +139,13 @@ class Apartments(db.Model):
 
 
 class Questions(db.Model):
+    __tablename__ = 'question'
     id = db.Column(db.Integer(), primary_key=True)
     suitor_id = db.Column(db.Integer(), unique=True, nullable=False)
-    question = db.Column(db.String(200), unique=False, nullable=False)
     answer = db.Column(db.String(500), unique=False, nullable=True)
 
+    # RELACIONES
+    question = db.Column(db.String(200), db.ForeignKey('suitor.id'), unique=False, nullable=False)
 
     def serialize(self):
         return{'id': self.id,
@@ -137,11 +155,13 @@ class Questions(db.Model):
                 }
 
 class apartment_users(db.Model):
+    __tablename__ = 'apartment_user'
     id = db.Column(db.Integer(), primary_key=True)
-    profile_id = db.Column(db.Integer(), unique=True, nullable=False)
-    apartment_id = db.Column(db.Integer(), unique=True, nullable=False)
     review = db.Column(db.String(800), unique=True, nullable=True)
     
+    # RELACIONES
+    profile_id = db.Column(db.Integer(), db.ForeignKey('user.id'), unique=True, nullable=False)
+    apartment_id = db.Column(db.Integer(), db.ForeignKey('apartment.id'), unique=True, nullable=False)
 
     def serialize(self):
         return{'id' : self.id,
